@@ -38,7 +38,6 @@ if __name__ == "__main__":
 
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
-    bff=0
     while (True):
         print("Speak now.")
         guess = recognize_speech_from_mic(recognizer, microphone)
