@@ -43,7 +43,8 @@ if __name__ == "__main__":
         guess = recognize_speech_from_mic(recognizer, microphone)
         if guess["transcription"]:
             # show the user the transcription
-            print("you said:{}".format(guess["transcription"]))
+            timestr = time.strftime("%Y-%m-%d-%H%M%S")
+            print(timestr+":{}".format(guess["transcription"]))
             break
         if not guess["success"]:
             print("I didn't catch that. What did you say?\n")
