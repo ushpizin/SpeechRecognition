@@ -1,7 +1,9 @@
 import random
 import time
 import speech_recognition as sr
-#install pyaudio for sr
+#install pyaudio and SpeechRecognition for sr
+import logging
+
 
 def recognize_speech_from_mic(recognizer, microphone):
     # check that recognizer and microphone arguments are appropriate type
@@ -36,17 +38,24 @@ def recognize_speech_from_mic(recognizer, microphone):
 
 if __name__ == "__main__":
 
+    logging.basicConfig(filename='SpeechRecLog.log',format='%(asctime)s - %(message)s', level=logging.INFO)
+    print(logging.getLoggerClass().root.handlers[0].baseFilename)
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
+    print("Speak now.")
+    guess = recognize_speech_from_mic(recognizer, microphone)
     while (True):
-        print("Speak now.")
-        guess = recognize_speech_from_mic(recognizer, microphone)
         if guess["transcription"]:
             # show the user the transcription
             timestr = time.strftime("%Y-%m-%d-%H%M%S")
             print(timestr+":{}".format(guess["transcription"]))
-            break
+            logging.info(" {}".format(guess["transcription"]))
+           # break
         if not guess["success"]:
             print("I didn't catch that. What did you say?\n")
-            break
+            #break
+        recognizer = sr.Recognizer()
+        microphone = sr.Microphone()
+        guess = recognize_speech_from_mic(recognizer, microphone)
+
 
