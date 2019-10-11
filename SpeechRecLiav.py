@@ -1,61 +1,44 @@
-import random
-import time
-import speech_recognition as sr
-#install pyaudio and SpeechRecognition for sr
+#!/usr/bin/env python3
 import logging
+import speech_recognition as sr
 
 
-def recognize_speech_from_mic(recognizer, microphone):
-    # check that recognizer and microphone arguments are appropriate type
-    if not isinstance(recognizer, sr.Recognizer):
-        raise TypeError("`recognizer` must be `Recognizer` instance")
-    if not isinstance(microphone, sr.Microphone):
-        raise TypeError("`microphone` must be `Microphone` instance")
-    # adjust the recognizer sensitivity to ambient noise and record audio
-    # from the microphone
+# Setup logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter(
+    '%(asctime)s - [%(levelname)s] %(message)s'))
+logger.addHandler(console_handler)
+
+
+def recognize(recognizer, source):
+    logger.info('Listening...')
+    audio = recognizer.listen(source)
+
+    logger.info('Recognizing...')
+    try:
+        return recognizer.recognize_google(audio)
+    except sr.UnknownValueError:
+        return None
+
+
+def main():
+    recognizer = sr.Recognizer()
+    microphone = sr.Microphone()
+
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
-    # set up the response object
-    response = {
-        "success": True,
-        "error": None,
-        "transcription": None
-    }
 
-    try:
-        response["transcription"] = recognizer.recognize_google(audio)
-    except sr.RequestError:
-        # API was unreachable or unresponsive
-        response["success"] = False
-        response["error"] = "API unavailable"
-    except sr.UnknownValueError:
-        # speech was unintelligible
-        response["error"] = "Unable to recognize speech"
-
-    return response
+        while True:
+            transcription = recognize(recognizer, source)
+            if transcription:
+                logger.info(transcription)
+            else:
+                logger.info('I didn\'t catch that. What did you say?')
 
 
 if __name__ == "__main__":
-
-    logging.basicConfig(filename='SpeechRecLog.log',format='%(asctime)s - %(message)s', level=logging.INFO)
-    print(logging.getLoggerClass().root.handlers[0].baseFilename)
-    recognizer = sr.Recognizer()
-    microphone = sr.Microphone()
-    print("Speak now.")
-    guess = recognize_speech_from_mic(recognizer, microphone)
-    while (True):
-        if guess["transcription"]:
-            # show the user the transcription
-            timestr = time.strftime("%Y-%m-%d-%H%M%S")
-            print(timestr+":{}".format(guess["transcription"]))
-            logging.info(" {}".format(guess["transcription"]))
-           # break
-        if not guess["success"]:
-            print("I didn't catch that. What did you say?\n")
-            #break
-        recognizer = sr.Recognizer()
-        microphone = sr.Microphone()
-        guess = recognize_speech_from_mic(recognizer, microphone)
-
-
+    main()
